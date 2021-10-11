@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "nodemon ./bin/www",
-    "dev": "nodemon ./bin/www"
+    "start": "node ./bin/www",
+    "dev": "node ./bin/www"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -13,6 +13,7 @@
     "debug": "~2.6.9",
     "dotenv": "^10.0.0",
     "express": "~4.16.1",
+    "heroku": "^7.59.0",
     "http-errors": "~1.6.3",
     "jade": "~1.11.0",
     "jsonwebtoken": "^8.5.1",
