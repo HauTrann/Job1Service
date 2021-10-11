@@ -1,8 +1,13 @@
 var db = require('../config/db_connection');
 const logger = require('../logger');
+const uuidv4 = require('uuid');
+
 var NetWork = {
     getAllNetWork: function (callback) {
         return db.query("Select * from network ORDER BY `ORDER`", callback);
+    },
+    getMembers: function (NetworkID, callback) {
+        return db.query("Select * from networkmember WHERE NETWORKID =? ", [NetworkID], callback);
     },
     countRow: function (searchText, callback) {
         if (!searchText || searchText.trim() === '') {
@@ -30,6 +35,19 @@ var NetWork = {
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             [network.ID, network.NAME, network.CODE, network.ICON, network.NAMEICON, network.EXPECTEDAPY, network.COMMISSION, network.TOKENPRICE, network.TOTALAMOUNT, network.STATUS, network.USERCREATE, network.USERMODIFY, network.DATEMODIFY, network.ORDER, network.STATUSNAME, network.BACKGROUND], callback);
     },
+
+    deleteMember: function (NetworkID, callback) {
+        let sql = "DELETE FROM networkmember WHERE NETWORKID= ?";
+        db.query(sql, [NetworkID], callback);
+    },
+
+    addMemember: function (networkMembers, NetworkID, callback) {
+        logger.logDb("add NetWorkMember");
+        let sql = "INSERT INTO networkmember (ID, NETWORKID, NAME, ADRRESS, LINK, STATUS, TYPE, `ORDER`) VALUES ?";
+        let values = [networkMembers.map(item => [uuidv4.v4(), NetworkID, item.NAME, item.ADRRESS, item.LINK, item.STATUS, item.TYPE, item.ORDER])];
+        db.query(sql, values, callback);
+    },
+
     delete: function (id, callback) {
         logger.logDb("DELETE NetWork");
         return db.query("delete from network where Id=?", [id], callback);

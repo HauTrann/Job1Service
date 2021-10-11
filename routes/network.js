@@ -25,6 +25,20 @@ router.get('/:id?', function (req, res, next) {
     }
 });
 
+router.get('/members/:networkID', function (req, res, next) {
+    if (req.params.networkID) {
+        Network.getMembers(req.params.networkID, function (err, rows) {
+            if (err) {
+                res.status(400).json(err);
+            } else {
+                res.json(rows);
+            }
+        });
+    } else {
+        res.status(400).json(null);
+    }
+});
+
 router.post('/getPage', auth, function (req, res, next) {
     const { pageNumber, pageSize, searchText } = req.body;
     const offset = (pageNumber - 1) * pageSize;
@@ -55,9 +69,9 @@ router.get('/getFile/:id', function (req, res, next) {
             if (err) {
                 res.status(400).json(err);
             } else {
-                if(rows.length === 0 || !rows[0].ICONDATA){
+                if (rows.length === 0 || !rows[0].ICONDATA) {
                     res.status(400).json(err);
-                }else{
+                } else {
                     var fileData = Buffer.from(rows[0].ICONDATA);
                     res.writeHead(200, {
                         'Content-Type': 'image/png',
@@ -70,7 +84,7 @@ router.get('/getFile/:id', function (req, res, next) {
             }
         });
     } catch (error) {
-        
+
     }
 });
 
@@ -80,9 +94,19 @@ router.post('/addNew', auth, function (req, res, next) {
     data.USERCREATE = req.user.userID;
     Network.add(data, function (err, rows) {
         if (err) {
-            res.json(err);
+            res.status(400).json(err);
         } else {
-            res.json({ status: 1 });
+            if (data.members && data.members.length > 0) {
+                Network.addMemember(data.members, data.ID, (errAddMember, rowsAddMember) => {
+                    if (errAddMember) {
+                        res.status(400).json(err);
+                    } else {
+                        res.json({ status: 1 });
+                    }
+                });
+            } else {
+                res.json({ status: 1 });
+            }
         }
 
     });
@@ -91,14 +115,29 @@ router.post('/addNew', auth, function (req, res, next) {
 router.post('/update', auth, function (req, res, next) {
     const data = req.body;
     data.USERMODIFY = req.user.userID;
-    data.ICONDATA = Buffer.from(data.ICON.split(",")[1],"base64");
+    data.ICONDATA = Buffer.from(data.ICON.split(",")[1], "base64");
     Network.update(data, function (err, rows) {
         if (err) {
             res.json(err);
         } else {
-            res.json({ status: 1 });
+            Network.deleteMember(data.ID, (errAddMember, rowsAddMember) => {
+                if (errAddMember) {
+                    res.status(400).json(err);
+                } else {
+                    if (data.members && data.members.length > 0) {
+                        Network.addMemember(data.members, data.ID, (errAddMember, rowsAddMember) => {
+                            if (errAddMember) {
+                                res.status(400).json(err);
+                            } else {
+                                res.json({ status: 1 });
+                            }
+                        });
+                    } else {
+                        res.json({ status: 1 });
+                    }
+                }
+            });
         }
-
     });
 });
 
