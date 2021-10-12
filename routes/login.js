@@ -16,7 +16,7 @@ router.post("/", async (req, res) => {
         }
         // Validate if user exist in our database
         let user = null;
-        UsersDB.getUserByEmail(email, (err, rows) => {
+        UsersDB.getUserByEmail(email.toLowerCase(), (err, rows) => {
             if (err) {
                 res.status(400).send("Invalid Credentials");
             } else {

@@ -143,13 +143,23 @@ router.post('/update', auth, function (req, res, next) {
 
 router.post('/delete', auth, function (req, res, next) {
     const data = req.body;
-    Network.delete(data.ID, function (err, rows) {
-        if (err) {
-            res.json(err);
-        } else {
-            res.json({ status: 1 });
-        }
-    });
+    if (data.ID) {
+        Network.deleteMember(data.ID, (errAddMember, rowsAddMember) => {
+            if (errAddMember) {
+                res.status(400).json(errAddMember);
+            } else {
+                Network.delete(data.ID, function (err, rows) {
+                    if (err) {
+                        res.status(400).json(err);
+                    } else {
+                        res.json({ status: 1 });
+                    }
+                });
+            }
+        });
+    } else {
+        res.status(400).json(err);
+    }
 });
 
 router.post('/:id?', function (req, res, next) {

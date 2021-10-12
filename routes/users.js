@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const uuidv4 = require('uuid');
+const auth = require("../middleware/auth");
 
 var UsersDB = require('../model/user');
 const utils = require('../utils/utils');
@@ -10,7 +11,7 @@ router.get('/', function (req, res, next) {
   res.send('respond with a resource');
 });
 
-router.post('/register', function (req, res, next) {
+router.post('/register', auth, function (req, res, next) {
   const body = req.body;
   if (!(body.email || !body.password)) {
     res.status(400).send("All input is required");
